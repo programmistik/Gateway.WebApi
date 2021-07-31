@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Ocelot.DependencyInjection;
@@ -14,15 +15,19 @@ namespace Gateway.WebApi
 {
     public class Startup
     {
+
+        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var auth = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AppSettings")["Authority"];
             services.AddControllers();
             services.AddAuthentication("Bearer")
                 .AddJwtBearer("Bearer", options =>
                 {
-                    options.Authority = "https://localhost:5001";
+                    options.Authority = auth; 
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateAudience = false
@@ -44,7 +49,7 @@ namespace Gateway.WebApi
             {
                 endpoints.MapControllers();
             });
-
+            
             app.UseAuthentication();
 
             await app.UseOcelot();
